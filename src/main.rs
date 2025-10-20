@@ -11,6 +11,7 @@ mod object;
 mod sphere;
 mod hittable_list;
 mod utils;
+mod interval;
 
 fn ray_color(r : &Ray, world : &dyn Hittable) -> Color {
     let hit = world.hit(r, 0.0, f32::INFINITY);
@@ -33,7 +34,8 @@ fn main() {
 
     // World
     let mut world : HittableList = HittableList::new();
-    world.add(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5) as &dyn Hittable);
+    world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0,-100.5,-1.0), 100.0)));
 
     // Camera
     let focal_length = 1.0;
