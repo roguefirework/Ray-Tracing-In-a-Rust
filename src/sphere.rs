@@ -3,6 +3,7 @@ use crate::color::Color;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::Point3;
+
 pub struct Sphere {
     center: Point3,
     radius: f32,

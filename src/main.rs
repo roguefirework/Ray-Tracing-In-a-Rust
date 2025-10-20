@@ -33,7 +33,7 @@ fn main() {
 
     // World
     let mut world : HittableList = HittableList::new();
-    // ADD objects
+    world.add(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5) as &dyn Hittable);
 
     // Camera
     let focal_length = 1.0;

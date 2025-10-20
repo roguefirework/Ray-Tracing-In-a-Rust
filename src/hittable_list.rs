@@ -3,20 +3,24 @@ use crate::object::{HitRecord, Hittable};
 use crate::ray::Ray;
 
 pub struct HittableList<'a> {
-    objects : &'a mut Vec<Rc<dyn Hittable>>
+    objects : Vec<&'a dyn Hittable>
 }
 
-impl HittableList<'_> {
-    pub fn new<'a>() -> HittableList<'a> {
-        todo!()// figure out how to make a constructor
+impl<'h> HittableList<'h> {
+    pub fn new() -> Self {
+        HittableList {
+            objects : Vec::new()
+        }
     }
-    pub fn objects(&self) -> Vec<Rc<dyn Hittable>> {
-        self.objects.clone()
+    pub fn objects(&self) -> &[&'h dyn Hittable] {
+        &self.objects
     }
-    pub fn add(&mut self, object : Rc<dyn Hittable>) {
+    pub fn add(&mut self, object : &'h dyn Hittable)
+    {
         self.objects.push(object);
     }
     pub fn clear(&mut self) {
+
         self.objects.clear()
     }
 }
@@ -25,9 +29,9 @@ impl Hittable for HittableList<'_> {
         let mut hit : Option<HitRecord> = None;
         let mut closest_so_far = t_max;
         for object in self.objects.iter() {
-            let maybeHit = object.hit(ray, t_min, closest_so_far);
-            if (maybeHit.is_some()) {
-                hit = maybeHit;
+            let maybe_hit = object.hit(ray, t_min, closest_so_far);
+            if (maybe_hit.is_some()) {
+                hit = maybe_hit;
                 closest_so_far = hit.unwrap().t();
             }
         }
