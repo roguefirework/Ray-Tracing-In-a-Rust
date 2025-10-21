@@ -1,27 +1,28 @@
-use crate::{object};
-use crate::color::Color;
 use crate::interval::Interval;
+use crate::material::Material;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::Point3;
+use crate::object;
 
 pub struct Sphere {
     center: Point3,
-    radius: f32,
+    radius: f64,
+    material: Box<dyn Material>,
 }
 impl Sphere {
-    pub fn new(center: Point3, radius: f32) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+        Self { center, radius, material }
     }
     pub fn center(&self) -> Point3 {
         self.center
     }
-    pub fn radius(&self) -> f32 {
+    pub fn radius(&self) -> f64 {
         self.radius
     }
 }
 impl object::Hittable for Sphere {
-    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<object::HitRecord> {
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
         let oc = self.center - *ray.origin();
         let a = ray.direction().length_squared();
         let h = ray.direction().dot(oc);
@@ -32,13 +33,13 @@ impl object::Hittable for Sphere {
         }
         let sqrt_discriminant = discriminant.sqrt();
         let mut root = (h - sqrt_discriminant) / a;
-        if (!interval.surrounds(root)) {
+        if !interval.surrounds(root) {
             root = (h + sqrt_discriminant) / a;
-            if (!interval.surrounds(root)) {
+            if !interval.surrounds(root) {
                 return None;
             }
         }
         let hit_position = ray.at(root);
-        return Some(HitRecord::new(hit_position, (hit_position - self.center) /  self.radius, ray, root));
+        Some(HitRecord::new(hit_position, (hit_position - self.center) /  self.radius, ray, root, self.material.clone_box()))
     }
 }

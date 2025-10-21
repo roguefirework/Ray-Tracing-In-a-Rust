@@ -1,30 +1,25 @@
 use crate::vec3::Vec3;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub(crate) struct Ray<'a> {
-    origin: &'a Vec3,
-    direction: &'a Vec3
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct Ray {
+    origin: Box<Vec3>,
+    direction: Box<Vec3>
 }
-impl<'a> Ray<'a> {
-    pub fn new(origin: &'a Vec3, direction: &'a Vec3) -> Self {
-        Self { origin, direction }
+impl Ray {
+    pub fn new(origin: Vec3, direction: Vec3) -> Self {
+        Self { origin: Box::new(origin), direction: Box::new(direction) }
     }
     pub fn origin(&self) -> &Vec3 {
-        self.origin
+        self.origin.as_ref()
     }
     pub fn direction(&self) -> &Vec3 {
-        self.direction
+        self.direction.as_ref()
     }
     pub fn unit_direction(&self) -> Vec3 {
         self.direction.normalize()
     }
-    /*
-    pub fn normalize(&self) -> Ray {
-        Ray::new(self.origin, &self.unit_direction())
-    }
-    */
 
-    pub fn at(&self, t: f32) -> Vec3 {
+    pub fn at(&self, t: f64) -> Vec3 {
         *self.origin + (t * *self.direction)
     }
 

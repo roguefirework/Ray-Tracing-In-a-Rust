@@ -1,10 +1,11 @@
-use crate::color::{write_color, Color};
+use crate::camera::Camera;
+use crate::color::Color;
 use crate::hittable_list::HittableList;
-use crate::interval::Interval;
-use crate::object::Hittable;
-use crate::vec3::{Point3, Vec3};
-use crate::ray::Ray;
+use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::Sphere;
+use crate::utils::{random_double, random_double_range};
+use crate::vec3::{Point3, Vec3};
+
 mod vec3;
 mod color;
 mod ray;
@@ -13,60 +14,48 @@ mod sphere;
 mod hittable_list;
 mod utils;
 mod interval;
-
-fn ray_color(r : &Ray, world : &dyn Hittable) -> Color {
-    let hit = world.hit(r, &Interval::new(0.0, f32::INFINITY));
-    if (hit.is_some()) {
-        return 0.5 * (hit.unwrap().normal() + Color::new(1.0, 1.0, 1.0));
-    }
-
-    let unit_direction : Vec3 = r.unit_direction();
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0- t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0);
-}
-
+mod camera;
+mod material;
 
 fn main() {
-    // Image setup
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
-    let image_height : i32 = if (image_width as f32 / aspect_ratio) as i32 > 1 {
-        (image_width as f32 / aspect_ratio) as i32 } else { 1 };
-
     // World
     let mut world : HittableList = HittableList::new();
-    //world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
-    //world.add(Box::new(Sphere::new(Point3::new(0.0,-100.5,-1.0), 100.0)));
+    let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
+    world.add(Box::new(Sphere::new(Point3::new(0.0,-1000.0,0.0), 1000.0, Box::new(ground_material))));
+    for i in 0..11 {
+        for j in 0..11 {
+            let choose_material = random_double();
+            let center = Point3::new(i as f64 + 0.9 * random_double(), 0.2, j as f64 + 0.9 * random_double());
 
-    // Camera
-    let focal_length = 1.0;
-    let viewport_height = 2.0;
-    let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
-    let camera_center = Point3::new(0.0,0.0,0.0);
-
-    // Viewport vectors
-    let viewport_u = Vec3::new(viewport_width,0.0,0.0);
-    let viewport_v = Vec3::new(0.0,-viewport_height,0.0);
-    // Pixel deltas
-    let pixel_delta_u = viewport_u / image_width as f32;
-    let pixel_delta_v = viewport_v / image_height as f32;
-
-    // upper left pixel
-    let viewport_upper_left = camera_center - Vec3::new(0.0,0.0,focal_length) -
-        viewport_u/2.0 - viewport_v/2.0;
-    let pixel00_loc = viewport_upper_left+ 0.5 * (pixel_delta_u + pixel_delta_v);
-
-
-    println!("P3\n{} {}\n255", image_width, image_height);
-
-    for j in 0..image_height {
-        eprintln!("Scanlines remaining: {}", (image_height - j));
-        for i in 0..image_width {
-            let pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-            let ray_direction = pixel_center - camera_center;
-            let ray = Ray::new(&camera_center, &ray_direction);
-            let color = ray_color(&ray, &world);
-            write_color(&color);
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                if choose_material < 0.8 {
+                    let albedo = Color::random() * Color::random();
+                    let material = Lambertian::new(albedo);
+                    world.add(Box::new(Sphere::new(center,0.2, Box::new(material))));
+                } else if choose_material < 0.95 {
+                    let albedo = Color::random_range(0.5, 1.0);
+                    let fuzz = random_double_range(0.0, 0.5);
+                    let material = Metal::new(albedo, fuzz);
+                    world.add(Box::new(Sphere::new(center,0.2, Box::new(material))));
+                } else {
+                    let material = Dielectric::new(1.5);
+                    world.add(Box::new(Sphere::new(center,0.2, Box::new(material))));
+                }
+            }
         }
     }
+    let material1 = Dielectric::new(1.5);
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, Box::new(material1))));
+    let material2 = Lambertian::new(Color::new(0.4, 0.2, 0.1));
+    world.add(Box::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, Box::new(material2))));
+    let material3 = Metal::new(Color::new(0.7, 0.6, 0.5), 0.0);
+    world.add(Box::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, Box::new(material3))));
+
+
+
+    let camera : Camera = Camera::new(16.0/9.0, 1200,500,
+                                      50, Point3::new(13.0,2.0,3.0),
+                                      Point3::new(0.0,0.0,0.0),
+                                      Vec3::new(0.0,1.0,0.0), 20.0, 0.6, 10.0);
+    camera.render(&world);
 }
