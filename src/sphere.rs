@@ -1,5 +1,6 @@
 use crate::{object};
 use crate::color::Color;
+use crate::interval::Interval;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::Point3;
@@ -20,7 +21,7 @@ impl Sphere {
     }
 }
 impl object::Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<object::HitRecord> {
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<object::HitRecord> {
         let oc = self.center - *ray.origin();
         let a = ray.direction().length_squared();
         let h = ray.direction().dot(oc);
@@ -30,10 +31,10 @@ impl object::Hittable for Sphere {
             return None;
         }
         let sqrt_discriminant = discriminant.sqrt();
-        let mut root = (h - sqrt_discriminant) / h;
-        if (root <= t_min || t_max <= root) {
-            root = (h + sqrt_discriminant) / h;
-            if (root <= t_min || t_max >= root) {
+        let mut root = (h - sqrt_discriminant) / a;
+        if (!interval.surrounds(root)) {
+            root = (h + sqrt_discriminant) / a;
+            if (!interval.surrounds(root)) {
                 return None;
             }
         }

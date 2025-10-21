@@ -1,4 +1,4 @@
-struct Interval {
+pub struct Interval {
     pub min: f32,
     pub max: f32
 }
@@ -18,4 +18,5 @@ impl Interval {
     pub fn empty() -> Interval {
         return Interval::new(f32::INFINITY, f32::NEG_INFINITY);
     }
+    pub fn universe() -> Interval {return Interval::new(f32::NEG_INFINITY, f32::INFINITY);}
 }

@@ -1,5 +1,6 @@
 use crate::color::{write_color, Color};
 use crate::hittable_list::HittableList;
+use crate::interval::Interval;
 use crate::object::Hittable;
 use crate::vec3::{Point3, Vec3};
 use crate::ray::Ray;
@@ -14,7 +15,7 @@ mod utils;
 mod interval;
 
 fn ray_color(r : &Ray, world : &dyn Hittable) -> Color {
-    let hit = world.hit(r, 0.0, f32::INFINITY);
+    let hit = world.hit(r, &Interval::new(0.0, f32::INFINITY));
     if (hit.is_some()) {
         return 0.5 * (hit.unwrap().normal() + Color::new(1.0, 1.0, 1.0));
     }
@@ -34,13 +35,13 @@ fn main() {
 
     // World
     let mut world : HittableList = HittableList::new();
-    world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0,-100.5,-1.0), 100.0)));
+    //world.add(Box::new(Sphere::new(Point3::new(0.0,0.0,-1.0), 0.5)));
+    //world.add(Box::new(Sphere::new(Point3::new(0.0,-100.5,-1.0), 100.0)));
 
     // Camera
     let focal_length = 1.0;
     let viewport_height = 2.0;
-    let viewport_width = viewport_height * aspect_ratio;
+    let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
     let camera_center = Point3::new(0.0,0.0,0.0);
 
     // Viewport vectors
