@@ -2,29 +2,27 @@ use crate::vec3::Vec3;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Ray {
-    origin: Box<Vec3>,
-    direction: Box<Vec3>,
+    origin: Vec3,
+    direction: Vec3,
     time: f64
 }
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Self { origin: Box::new(origin), direction: Box::new(direction),time: 0.0 }
+        Self { origin: origin, direction: direction,time: 0.0 }
     }
     pub fn new_with_time(origin: Vec3, direction: Vec3, time: f64) -> Self {
-        Self { origin: Box::new(origin), direction: Box::new(direction),time: time }
+        Self { origin: origin, direction: direction,time: time }
     }
-    pub fn origin(&self) -> &Vec3 {
-        self.origin.as_ref()
+    pub fn origin(&self) -> &Vec3 { &self.origin
     }
     pub fn direction(&self) -> &Vec3 {
-        self.direction.as_ref()
+        &self.direction
     }
     pub fn unit_direction(&self) -> Vec3 {
         self.direction.normalize()
     }
     pub fn time(&self) -> f64 { self.time }
     pub fn at(&self, t: f64) -> Vec3 {
-        *self.origin + (t * *self.direction)
+        self.origin + (t * self.direction)
     }
-
 }
