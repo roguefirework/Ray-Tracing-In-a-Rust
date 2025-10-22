@@ -22,8 +22,8 @@ fn main() {
     let mut world : HittableList = HittableList::new();
     let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
     world.add(Box::new(Sphere::new(Point3::new(0.0,-1000.0,0.0), 1000.0, Box::new(ground_material))));
-    for i in -20..20 {
-        for j in -20..20 {
+    for i in -10..10 {
+        for j in -10..10 {
             let choose_material = random_double();
             let center = Point3::new(i as f64 + 0.9 * random_double(), 0.2, j as f64 + 0.9 * random_double());
 
@@ -54,7 +54,7 @@ fn main() {
 
 
 
-    let camera : Camera = Camera::new(16.0/9.0, 1920,500,
+    let camera : Camera = Camera::new(16.0/9.0, 400,100,
                                       50, Point3::new(13.0,2.0,3.0),
                                       Point3::new(0.0,0.0,0.0),
                                       Vec3::new(0.0,1.0,0.0), 20.0, 0.6, 10.0);
