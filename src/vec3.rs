@@ -161,7 +161,6 @@ impl ops::Neg for Vec3 {
     }
 }
 impl Sum<Vec3> for Vec3 {
-    #[inline]
     fn sum<I: Iterator<Item=Vec3>>(iter: I) -> Self {
         iter.fold(Vec3::new(0.0, 0.0, 0.0), |a, b| a + b)
     }
