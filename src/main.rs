@@ -54,7 +54,7 @@ fn main() {
 
 
 
-    let camera : Camera = Camera::new(16.0/9.0, 1920,500,
+    let camera : Camera = Camera::new(16.0/9.0, 1200,50,
                                       50, Point3::new(13.0,2.0,3.0),
                                       Point3::new(0.0,0.0,0.0),
                                       Vec3::new(0.0,1.0,0.0), 20.0, 0.6, 10.0);

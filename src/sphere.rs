@@ -2,7 +2,7 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::object::{HitRecord, Hittable};
 use crate::ray::Ray;
-use crate::vec3::Point3;
+use crate::vec3::{Point3, Vec3};
 use crate::object;
 
 pub struct Sphere {
@@ -11,13 +11,14 @@ pub struct Sphere {
     material: Box<dyn Material>,
 }
 pub struct MovingSphere {
-    center: Ray,
+    center: Vec3,
+    offset: Vec3,
     radius: f64,
     material: Box<dyn Material>,
 }
 impl MovingSphere {
-    pub fn new(center0: Point3, center1: Point3, radius: f64, material: Box<dyn Material>) -> Self {
-        MovingSphere {center:Ray::new_with_time(center0, center1-center0,0.0), radius, material}
+    pub fn new(center: Point3, end: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+        MovingSphere {center,offset: end - center, radius, material}
     }
     pub fn radius(&self) -> f64 {
         self.radius
@@ -38,30 +39,34 @@ impl Sphere {
 
 impl object::Hittable for Sphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
-        let oc = self.center - *ray.origin();
-        let a = ray.direction().length_squared();
-        let h = ray.direction().dot(oc);
-        let c = oc.length_squared() - self.radius * self.radius;
-        let discriminant = h*h - a*c;
-        if discriminant < 0.0 {
-            return None;
-        }
-        let sqrt_discriminant = discriminant.sqrt();
-        let mut root = (h - sqrt_discriminant) / a;
-        if !interval.surrounds(root) {
-            root = (h + sqrt_discriminant) / a;
-            if !interval.surrounds(root) {
-                return None;
-            }
-        }
-        let hit_position = ray.at(root);
-        Some(HitRecord::new(hit_position, (hit_position - self.center) /  self.radius, ray, root, self.material.clone_box()))
+        return hit_sphere(&self.center, &self.radius, self.material.as_ref(), ray, interval);
     }
 }
 
 impl Hittable for MovingSphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
-        let current_center = ray.at(ray.time());
-        return Sphere::new(current_center,self.radius,self.material.clone_box()).hit(ray, interval);
+        let current_center = self.center + self.offset * ray.time();
+        return hit_sphere(&current_center, &self.radius, self.material.as_ref(), ray, interval);
     }
+}
+#[inline]
+fn hit_sphere<'a>(center:&Point3, radius:&f64, material:&'a (dyn Material + 'a), ray: &Ray, interval: &Interval) -> Option<HitRecord<'a>> {
+    let oc = *center - *ray.origin();
+    let a = ray.direction().length_squared();
+    let h = ray.direction().dot(oc);
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = h * h - a * c;
+    if discriminant < 0.0 {
+        return None;
+    }
+    let sqrt_discriminant = discriminant.sqrt();
+    let mut root = (h - sqrt_discriminant) / a;
+    if !interval.surrounds(root) {
+        root = (h + sqrt_discriminant) / a;
+        if !interval.surrounds(root) {
+            return None;
+        }
+    }
+    let hit_position = ray.at(root);
+    Some(HitRecord::new(hit_position, (hit_position - *center) / *radius, ray, root, material))
 }
