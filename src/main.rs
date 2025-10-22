@@ -2,7 +2,7 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, Lambertian, Metal};
-use crate::sphere::Sphere;
+use crate::sphere::{MovingSphere, Sphere};
 use crate::utils::{random_double, random_double_range};
 use crate::vec3::{Point3, Vec3};
 
@@ -31,7 +31,8 @@ fn main() {
                 if choose_material < 0.8 {
                     let albedo = Color::random() * Color::random();
                     let material = Lambertian::new(albedo);
-                    world.add(Box::new(Sphere::new(center,0.2, Box::new(material))));
+                    let center2 = center + Vec3::new(0.0, random_double(), 0.0);
+                    world.add(Box::new(MovingSphere::new(center,center2,0.2, Box::new(material))));
                 } else if choose_material < 0.95 {
                     let albedo = Color::random_range(0.5, 1.0);
                     let fuzz = random_double_range(0.0, 0.5);

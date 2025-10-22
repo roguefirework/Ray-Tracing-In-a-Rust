@@ -3,11 +3,15 @@ use crate::vec3::Vec3;
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Ray {
     origin: Box<Vec3>,
-    direction: Box<Vec3>
+    direction: Box<Vec3>,
+    time: f64
 }
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Self { origin: Box::new(origin), direction: Box::new(direction) }
+        Self { origin: Box::new(origin), direction: Box::new(direction),time: 0.0 }
+    }
+    pub fn new_with_time(origin: Vec3, direction: Vec3, time: f64) -> Self {
+        Self { origin: Box::new(origin), direction: Box::new(direction),time: time }
     }
     pub fn origin(&self) -> &Vec3 {
         self.origin.as_ref()
@@ -18,7 +22,7 @@ impl Ray {
     pub fn unit_direction(&self) -> Vec3 {
         self.direction.normalize()
     }
-
+    pub fn time(&self) -> f64 { self.time }
     pub fn at(&self, t: f64) -> Vec3 {
         *self.origin + (t * *self.direction)
     }

@@ -40,10 +40,10 @@ impl Material for Lambertian {
         let new_ray;
         if direction.near_zero()
         {
-            new_ray = Ray::new(hit_data.position(), hit_data.normal());
+            new_ray = Ray::new_with_time(hit_data.position(), hit_data.normal(), _ray_in.time());
         }
         else {
-            new_ray = Ray::new(hit_data.position(), direction);
+            new_ray = Ray::new_with_time(hit_data.position(), direction, _ray_in.time());
         }
 
         Some(ScatterData::new(Box::new(self.albedo), Box::new(new_ray)))
@@ -69,7 +69,7 @@ impl Material for Metal {
         if reflected.dot(hit_data.normal()) <= 0.0 {
             return None;
         }
-        Some(ScatterData::new(Box::new(self.albedo), Box::new(Ray::new(hit_data.position(), reflected))))
+        Some(ScatterData::new(Box::new(self.albedo), Box::new(Ray::new_with_time(hit_data.position(), reflected,ray_in.time()))))
     }
 
     fn clone_box(&self) -> Box<dyn Material> {
@@ -101,10 +101,10 @@ impl Material for Dielectric {
 
         if cant_refract || Dielectric::reflectance(cos_theta, ri) > random_double(){
             let reflected = ray_in.direction().reflect(&hit_data.normal()).normalize();
-            Some(ScatterData::new(Box::new(Color::new(1.0,1.0,1.0)), Box::new(Ray::new(hit_data.position(), reflected))))
+            Some(ScatterData::new(Box::new(Color::new(1.0,1.0,1.0)), Box::new(Ray::new_with_time(hit_data.position(), reflected, ray_in.time()))))
         } else {
             let refracted = Vec3::refract(unit_direction, &hit_data.normal(), ri);
-            Some(ScatterData::new(Box::new(Color::new(1.0,1.0,1.0)), Box::new(Ray::new(hit_data.position(), refracted))))
+            Some(ScatterData::new(Box::new(Color::new(1.0,1.0,1.0)), Box::new(Ray::new_with_time(hit_data.position(), refracted, ray_in.time()))))
         }
 
 
