@@ -84,20 +84,6 @@ impl Camera {
                 .unwrap()
                 .progress_chars("#>-"),
         );
-        /*
-        let mut image = Vec::new();
-        for j in 0..self.image_height {
-            for i in 0..self.image_width {
-                let mut color : Color = Color::new(0.0,0.0,0.0);
-                for _sample in 0..self.samples_per_pixel {
-                    let r : Ray= self.get_ray(i,j);
-                    color = color + self.ray_color(&r, world, self.max_depth)
-                }
-                bar.inc(1);
-                color = color * self.pixel_samples_scale;
-                image.push(color);
-            }
-        }*/
 
         let image : Vec<Vec<Color>> = (0..self.image_height).into_par_iter().map_with(bar.clone(), |bar_local,y| {
             let colors : Vec<Color> = (0..self.image_width).map(move |x| {
