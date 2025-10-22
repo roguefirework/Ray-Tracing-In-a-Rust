@@ -20,7 +20,7 @@ impl ScatterData {
     }
 }
 
-pub trait Material {
+pub trait Material : Send + Sync{
     fn scatter(self : &Self, ray_in : &Ray, hit_data : &HitRecord) -> Option<ScatterData>;
     fn clone_box (&self) -> Box<dyn Material>;
 }

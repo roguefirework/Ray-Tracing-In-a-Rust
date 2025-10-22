@@ -1,3 +1,5 @@
+use rayon::iter::ParallelIterator;
+use rayon::iter::IntoParallelIterator;
 use crate::color::{write_color, Color};
 use crate::interval::Interval;
 use crate::object::Hittable;
@@ -76,16 +78,23 @@ impl Camera {
     pub fn render(self : &Self, world : &dyn Hittable) {
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
 
-        for j in 0..self.image_height {
-            eprintln!("Scanlines remaining: {}", self.image_height - j);
-            for i in 0..self.image_width {
+        let image : Vec<Vec<Color>> = (0..self.image_height).into_par_iter().map(|i| {
+            let colors = (0..self.image_width).into_par_iter().map(move |j| {
                 let mut color : Color = Color::new(0.0,0.0,0.0);
                 for _sample in 0..self.samples_per_pixel {
                     let r : Ray= self.get_ray(i,j);
                     color = color + self.ray_color(&r, world, self.max_depth)
                 }
                 color = color * self.pixel_samples_scale;
-                write_color(&color);
+                return color
+            }).collect();
+            eprintln!("Finished line {}",i);
+            return colors
+        }).collect();
+
+        for line in image.iter() {
+            for color in line.iter() {
+                write_color(color);
             }
         }
     }

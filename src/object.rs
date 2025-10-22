@@ -32,6 +32,6 @@ impl HitRecord {
         self.material.as_ref()
     }
 }
-pub(crate) trait Hittable {
+pub(crate) trait Hittable : Send + Sync {
     fn hit(&self, ray: &Ray, interval : &Interval) -> Option<HitRecord>;
 }
