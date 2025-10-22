@@ -1,4 +1,5 @@
 use std::{ops};
+use std::iter::Sum;
 use std::ops::Mul;
 use crate::utils::{random_double, random_double_range};
 
@@ -137,5 +138,10 @@ impl ops::Neg for Vec3 {
     type Output = Vec3;
     fn neg(self) -> Vec3 {
         Vec3::new(-self.x, -self.y, -self.z)
+    }
+}
+impl Sum<Vec3> for Vec3 {
+    fn sum<I: Iterator<Item=Vec3>>(iter: I) -> Self {
+        iter.fold(Vec3::new(0.0, 0.0, 0.0), |a, b| a + b)
     }
 }

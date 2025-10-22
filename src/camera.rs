@@ -1,6 +1,7 @@
+use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::ParallelIterator;
 use rayon::iter::IntoParallelIterator;
-use crate::color::{write_color, Color};
+use crate::color::{write_file, Color};
 use crate::interval::Interval;
 use crate::object::Hittable;
 use crate::ray::Ray;
@@ -75,28 +76,42 @@ impl Camera {
             defocus_angle
         }
     }
-    pub fn render(self : &Self, world : &dyn Hittable) {
-        println!("P3\n{} {}\n255", self.image_width, self.image_height);
-
-        let image : Vec<Vec<Color>> = (0..self.image_height).into_par_iter().map(|i| {
-            let colors = (0..self.image_width).into_par_iter().map(move |j| {
+    pub fn render(self : &Self, world : &dyn Hittable, filename : &str) {
+        let bar = ProgressBar::new((self.image_height * self.image_width) as u64);
+        bar.set_style(
+            ProgressStyle::default_bar()
+                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
+                .unwrap()
+                .progress_chars("#>-"),
+        );
+        /*
+        let mut image = Vec::new();
+        for j in 0..self.image_height {
+            for i in 0..self.image_width {
                 let mut color : Color = Color::new(0.0,0.0,0.0);
                 for _sample in 0..self.samples_per_pixel {
                     let r : Ray= self.get_ray(i,j);
                     color = color + self.ray_color(&r, world, self.max_depth)
                 }
+                bar.inc(1);
                 color = color * self.pixel_samples_scale;
-                return color
+                image.push(color);
+            }
+        }*/
+
+        let image : Vec<Vec<Color>> = (0..self.image_height).into_par_iter().map_with(bar.clone(), |bar_local,y| {
+            let colors : Vec<Color> = (0..self.image_width).map(move |x| {
+                let color : Color = (0..self.samples_per_pixel).map(|_| {
+                    let r : Ray= self.get_ray(x,y);
+                    self.ray_color(&r, world, self.max_depth)
+                }).sum();
+                bar_local.inc(1);
+                return color * self.pixel_samples_scale;
             }).collect();
-            eprintln!("Finished line {}",i);
             return colors
         }).collect();
 
-        for line in image.iter() {
-            for color in line.iter() {
-                write_color(color);
-            }
-        }
+        write_file(image, filename);
     }
     
     fn ray_color(self: &Self, r : &Ray, world : &dyn Hittable, depth : u32) -> Color {
