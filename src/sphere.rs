@@ -51,7 +51,7 @@ impl object::Hittable for Sphere {
     }
 
     fn bounding_box(&self) -> &AABB {
-        todo!()
+        &self.aabb
     }
 }
 
@@ -62,7 +62,7 @@ impl Hittable for MovingSphere {
     }
 
     fn bounding_box(&self) -> &AABB {
-        todo!()
+        &self.aabb
     }
 }
 #[inline]
