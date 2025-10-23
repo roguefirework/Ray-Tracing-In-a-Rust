@@ -17,6 +17,7 @@ mod interval;
 mod camera;
 mod material;
 mod aabb;
+mod bvh;
 
 fn main() {
     // World

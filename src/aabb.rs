@@ -39,10 +39,10 @@ impl AABB {
     pub fn z(&self) -> &Interval {
         &self.z
     }
-    pub fn hit(&self, ray: &Ray, interval: Interval) -> Option<Interval> {
+    pub fn hit(&self, ray: &Ray, interval: &Interval) -> Option<Interval> {
         let ray_origin = ray.origin();
         let ray_direction = ray.direction();
-        let mut result : Interval = interval;
+        let mut result : Interval = Interval::new(interval.min,interval.max);
         for axis in 0..3 {
             let ax = self.axis_interval(axis);
             let adinv = 1.0 / ray_direction[axis];
