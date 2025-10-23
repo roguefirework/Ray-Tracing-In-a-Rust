@@ -1,3 +1,4 @@
+use crate::aabb::AABB;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::object::{HitRecord, Hittable};
@@ -8,17 +9,23 @@ use crate::object;
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    aabb: AABB,
     material: Box<dyn Material>,
 }
 pub struct MovingSphere {
     center: Vec3,
     offset: Vec3,
     radius: f64,
+    aabb: AABB,
     material: Box<dyn Material>,
 }
 impl MovingSphere {
     pub fn new(center: Point3, end: Point3, radius: f64, material: Box<dyn Material>) -> Self {
-        MovingSphere {center,offset: end - center, radius, material}
+        let offset = Point3::new(radius,radius,radius);
+
+        MovingSphere {center,offset: end - center, radius,
+            aabb: AABB::from_aabb(&AABB::from_bounds(&(center - offset), &(center + offset)),
+                                  &AABB::from_bounds(&(end - offset), &(end + offset))), material}
     }
     pub fn radius(&self) -> f64 {
         self.radius
@@ -26,7 +33,8 @@ impl MovingSphere {
 }
 impl Sphere {
     pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
-        Self { center, radius, material }
+        let offset = Point3::new(radius,radius,radius);
+        Self { center, radius,aabb: AABB::from_bounds(&(center - offset), &(center + offset)), material }
     }
     pub fn center(&self) -> Point3 {
         self.center
@@ -41,12 +49,20 @@ impl object::Hittable for Sphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
         return hit_sphere(&self.center, &self.radius, self.material.as_ref(), ray, interval);
     }
+
+    fn bounding_box(&self) -> &AABB {
+        todo!()
+    }
 }
 
 impl Hittable for MovingSphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
         let current_center = self.center + self.offset * ray.time();
         return hit_sphere(&current_center, &self.radius, self.material.as_ref(), ray, interval);
+    }
+
+    fn bounding_box(&self) -> &AABB {
+        todo!()
     }
 }
 #[inline]
