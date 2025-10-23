@@ -16,6 +16,7 @@ mod utils;
 mod interval;
 mod camera;
 mod material;
+mod aabb;
 
 fn main() {
     // World
@@ -54,7 +55,7 @@ fn main() {
 
 
 
-    let camera : Camera = Camera::new(16.0/9.0, 400,100,
+    let camera : Camera = Camera::new(16.0/9.0, 1200,500,
                                       50, Point3::new(13.0,2.0,3.0),
                                       Point3::new(0.0,0.0,0.0),
                                       Vec3::new(0.0,1.0,0.0), 20.0, 0.6, 10.0);
