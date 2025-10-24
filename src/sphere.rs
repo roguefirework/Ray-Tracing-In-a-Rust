@@ -47,7 +47,7 @@ impl Sphere {
 
 impl object::Hittable for Sphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
-        return hit_sphere(&self.center, &self.radius, self.material.as_ref(), ray, interval);
+        return hit_sphere(self.center, self.radius, self.material.as_ref(), ray, interval);
     }
 
     fn bounding_box(&self) -> &AABB {
@@ -57,8 +57,8 @@ impl object::Hittable for Sphere {
 
 impl Hittable for MovingSphere {
     fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
-        let current_center = self.center + self.offset * ray.time();
-        return hit_sphere(&current_center, &self.radius, self.material.as_ref(), ray, interval);
+        let current_center = self.center + (self.offset * ray.time());
+        return hit_sphere(current_center, self.radius, self.material.as_ref(), ray, interval);
     }
 
     fn bounding_box(&self) -> &AABB {
@@ -66,8 +66,8 @@ impl Hittable for MovingSphere {
     }
 }
 #[inline]
-fn hit_sphere<'a>(center:&Point3, radius:&f64, material:&'a (dyn Material + 'a), ray: &Ray, interval: &Interval) -> Option<HitRecord<'a>> {
-    let oc = *center - *ray.origin();
+fn hit_sphere<'a>(center:Point3, radius:f64, material:&'a (dyn Material + 'a), ray: &Ray, interval: &Interval) -> Option<HitRecord<'a>> {
+    let oc = center - *ray.origin();
     let a = ray.direction().length_squared();
     let h = ray.direction().dot(oc);
     let c = oc.length_squared() - radius * radius;
@@ -84,5 +84,5 @@ fn hit_sphere<'a>(center:&Point3, radius:&f64, material:&'a (dyn Material + 'a),
         }
     }
     let hit_position = ray.at(root);
-    Some(HitRecord::new(hit_position, (hit_position - *center) / *radius, ray, root, material))
+    Some(HitRecord::new(hit_position, (hit_position - center) / radius, &ray, root, material))
 }

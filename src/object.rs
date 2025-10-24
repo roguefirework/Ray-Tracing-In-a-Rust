@@ -4,6 +4,7 @@ use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
+#[derive(Copy, Clone)]
 pub(crate) struct HitRecord<'a> {
     position: Vec3,
     normal: Vec3,

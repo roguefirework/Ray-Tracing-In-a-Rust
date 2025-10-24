@@ -50,15 +50,15 @@ impl Vec3 {
         }
     }
     #[inline]
-    pub fn refract(uv : &Vec3, normal: &Vec3, etai_over_etat:f64) -> Vec3 {
-        let cos_theta = f64::min((-*uv).dot(*normal), 1.0);
-        let perpendicular_comp = etai_over_etat * (*uv + cos_theta* *normal);
-        let parallel_comp = -(1.0 - perpendicular_comp.length_squared()).abs().sqrt() * *normal;
+    pub fn refract(uv : Vec3, normal: Vec3, etai_over_etat:f64) -> Vec3 {
+        let cos_theta = f64::min((-uv).dot(normal), 1.0);
+        let perpendicular_comp = etai_over_etat * (uv + (cos_theta * normal));
+        let parallel_comp = -(1.0 - perpendicular_comp.length_squared()).abs().sqrt() * normal;
         perpendicular_comp + parallel_comp
     }
     #[inline]
-    pub fn reflect(self : &Self, n: &Vec3) -> Vec3 {
-        *self - (2.0 * self.dot(*n) * *n)
+    pub fn reflect(self : Self, n: Vec3) -> Vec3 {
+        self - 2.0 * self.dot(n) * n
     }
     #[inline]
     pub fn near_zero(&self) -> bool {
@@ -94,7 +94,7 @@ impl Vec3 {
         self.x() * other.x() + self.y() * other.y() + self.z() * other.z()
     }
     #[inline]
-    pub fn cross(&self, other : Vec3) -> Vec3 {
+    pub fn cross(&self, other : &Vec3) -> Vec3 {
         Vec3::new(self.y() * other.z() - self.z() * other.y(), self.z() * other.x() - self.x() * other.z() , self.x() * other.y() - self.y() * other.x())
     }
 
@@ -148,7 +148,8 @@ impl ops::Div<f64> for Vec3 {
     type Output = Vec3;
     #[inline]
     fn div(self, scalar: f64) -> Vec3 {
-        Vec3::new(self.x() / scalar, self.y() / scalar, self.z() / scalar)
+        let new_scalar = 1.0 / scalar;
+        Vec3::new(self.x() * new_scalar, self.y() * new_scalar, self.z() * new_scalar)
     }
 }
 impl ops::Neg for Vec3 {

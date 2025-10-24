@@ -2,6 +2,7 @@
 use crate::ray::Ray;
 use crate::vec3::Point3;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct AABB {
     x : Interval,
     y : Interval,
@@ -15,9 +16,9 @@ impl AABB {
     }
     pub fn from_bounds(a: &Point3, b: &Point3) -> AABB {
         AABB::new(
-            if a.x() < b.x() { Interval::new(a.x(),b.x()) } else {Interval::new(b.x(),a.x())},
-            if a.y() < b.y() { Interval::new(a.y(),b.y()) } else {Interval::new(b.y(),a.y())},
-            if a.z() < b.z() { Interval::new(a.z(),b.z()) } else {Interval::new(b.z(),a.z())}
+            Interval::new(a.x().min(b.x()), a.x().max(b.x())),
+            Interval::new(a.y().min(b.y()), a.y().max(b.y())),
+            Interval::new(a.z().min(b.z()), a.z().max(b.z())),
         )
     }
     pub fn from_aabb(p0: &AABB, p1: &AABB) -> AABB {
