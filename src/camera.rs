@@ -40,8 +40,8 @@ impl Camera {
 
         // Calculate basis vectors for camera
         let w = (look_from - look_at).normalize();
-        let u = up.cross(w).normalize();
-        let v = w.cross(u);
+        let u = up.cross(&w).normalize();
+        let v = w.cross(&u);
 
         // Viewport vectors
         let viewport_u = viewport_width * u;
@@ -122,8 +122,8 @@ impl Camera {
 
     fn get_ray(self: &Self, i : i32, j : i32) -> Ray {
         let offset = Self::sample_square();
-        let pixel_center = self.pixel00_loc +
-            ((i as f64 + offset.x()) * self.pixel_delta_u) + ((j as f64 + offset.y()) * self.pixel_delta_v);
+        let pixel_center = (self.pixel00_loc +
+            ((i as f64 + offset.x()) * self.pixel_delta_u)) + ((j as f64 + offset.y()) * self.pixel_delta_v);
         let origin = if self.defocus_angle <= 0.0 {self.center} else {self.defocus_disk_sample()};
         let ray_direction = pixel_center - origin;
 
@@ -135,6 +135,6 @@ impl Camera {
     }
     fn defocus_disk_sample(self : &Self) -> Vec3 {
         let point = Vec3::random_in_unit_disk();
-        self.center + self.defocus_disk_u * point.x() + self.defocus_disk_v * point.y()
+        (self.center + (self.defocus_disk_u * point.x())) + (self.defocus_disk_v * point.y())
     }
 }

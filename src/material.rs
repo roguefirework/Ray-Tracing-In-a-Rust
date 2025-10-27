@@ -64,7 +64,7 @@ impl Metal {
 }
 impl Material for Metal {
     fn scatter(self: &Self, ray_in: &Ray, hit_data: &HitRecord) -> Option<ScatterData> {
-        let reflected = ray_in.direction().reflect(&hit_data.normal()).normalize() + (self.fuzz * Vec3::random_unit_vector());
+        let reflected = ray_in.direction().reflect(hit_data.normal()).normalize() + (self.fuzz * Vec3::random_unit_vector());
         if reflected.dot(hit_data.normal()) <= 0.0 {
             return None;
         }
@@ -91,18 +91,18 @@ impl Dielectric {
 impl Material for Dielectric {
     fn scatter(self: &Self, ray_in: &Ray, hit_data: &HitRecord) -> Option<ScatterData> {
         let ri = if hit_data.front_face() {1.0 / self.refractive_index} else {self.refractive_index};
-        let unit_direction = &ray_in.unit_direction();
+        let unit_direction = ray_in.unit_direction();
 
-        let cos_theta = f64::min((-*unit_direction).dot(hit_data.normal()), 1.0);
+        let cos_theta = f64::min((-unit_direction).dot(hit_data.normal()), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cant_refract = ri * sin_theta > 1.0;
 
         if cant_refract || Dielectric::reflectance(cos_theta, ri) > random_double(){
-            let reflected = ray_in.direction().reflect(&hit_data.normal()).normalize();
+            let reflected = ray_in.direction().reflect(hit_data.normal()).normalize();
             Some(ScatterData::new(Box::new(Color::new(1.0,1.0,1.0)), Box::new(Ray::new_with_time(hit_data.position(), reflected, ray_in.time()))))
         } else {
-            let refracted = Vec3::refract(unit_direction, &hit_data.normal(), ri);
+            let refracted = Vec3::refract(unit_direction, hit_data.normal(), ri);
             Some(ScatterData::new(Box::new(Color::new(1.0,1.0,1.0)), Box::new(Ray::new_with_time(hit_data.position(), refracted, ray_in.time()))))
         }
 
