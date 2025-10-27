@@ -25,11 +25,11 @@ impl HittableList {
 
 }
 impl Hittable for HittableList {
-    fn hit(&self, ray: &Ray, interval : &Interval) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, interval : &mut Interval) -> Option<HitRecord> {
         let mut hit : Option<HitRecord> = None;
         let mut closest_so_far = interval.max;
         for object in self.objects.iter() {
-            let maybe_hit = object.hit(ray, &Interval::new(interval.min, closest_so_far));
+            let maybe_hit = object.hit(ray, interval);
             if let Some(new_hit) = &maybe_hit {
                 closest_so_far = new_hit.t();
             }
@@ -42,5 +42,9 @@ impl Hittable for HittableList {
 
     fn bounding_box(&self) -> &AABB {
         &self.aabb
+    }
+
+    fn clone_box(&self) -> Box<dyn Hittable> {
+        Box::new(HittableList::new())
     }
 }

@@ -2,8 +2,12 @@
 name = "RayTracing"
 version = "0.1.0"
 edition = "2024"
+[build-dependencies]
+vcpkg = "0.2.15"
 
 [dependencies]
 rand = "0.10.0-rc.0"
 rayon = "1.11.0"
 indicatif = "0.18.1"
+image = "0.25.8"
+prompted = "0.2.8"

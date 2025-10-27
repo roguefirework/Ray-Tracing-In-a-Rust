@@ -1,11 +1,10 @@
-use std::fs::File;
-use std::io::Write;
-use std::ops::Mul;
 use crate::interval::Interval;
 use crate::vec3::Vec3;
+use image::{ImageBuffer, Rgb, RgbImage};
+use std::ops::Mul;
 pub type Color = Vec3;
 
-fn write_color(pixel_color: &Color) -> String {
+fn map_color(pixel_color: &Color) -> Rgb<u8> {
     let mut r = pixel_color.x();
     let mut g = pixel_color.y();
     let mut b = pixel_color.z();
@@ -19,25 +18,17 @@ fn write_color(pixel_color: &Color) -> String {
     let g_normalized  = (intensity.clamp(g) * 256.0) as u32;
     let b_normalized  = (intensity.clamp(b) * 256.0) as u32;
 
-    format!("{}, {}, {}\n", r_normalized, g_normalized, b_normalized)
+    Rgb([r_normalized as u8, g_normalized as u8, b_normalized as u8])
 }
 pub fn write_file(image :Vec<Vec<Color>>, filename:&str) {
-    let mut file = File::create(filename).expect(&format!("Unable to create file {}", filename));
-    let header = format!("P3\n{} {}\n255\n", image[0].len(), image.len() );
-    file.write(header.as_bytes()).expect(&format!("Unable to write to file {}", filename));
-    image.iter().for_each(|row| {
-        row.iter().for_each(|&color| {
-            file.write(write_color(&color).as_bytes()).expect(&format!("Unable to write {}", filename));
-        })
-    });
-}
-pub fn write_file_flat(image: Vec<Color>,width:u32, height:u32, filename:&str) {
-    let mut file = File::create(filename).expect(&format!("Unable to create file {}", filename));
-    let header = format!("P3\n{} {}\n255\n", width, height);
-    file.write(header.as_bytes()).expect(&format!("Unable to write to file {}", filename));
-    image.iter().for_each(|row| {
-        file.write(write_color(&row).as_bytes()).expect(&format!("Unable to write to file {}", filename));
-    })
+    let filename = filename;
+    let mut buffer: RgbImage = ImageBuffer::new(image[0].len() as u32,image.len()  as u32);
+    println!("Writing image to {}", filename);
+    for (x, y, pixel) in buffer.enumerate_pixels_mut() {
+        let color = image[y as usize][x as usize];
+        *pixel = map_color(&color);
+    }
+    buffer.save(filename).unwrap();
 }
 pub fn linear_to_gamma(linear_component : f64) -> f64 {
     if linear_component > 0.0 {

@@ -34,6 +34,7 @@ impl<'a> HitRecord<'a> {
     }
 }
 pub(crate) trait Hittable : Send + Sync {
-    fn hit(&self, ray: &Ray, interval : &Interval) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, interval : &mut Interval) -> Option<HitRecord>;
     fn bounding_box(&self) -> &AABB;
+    fn clone_box(&self) -> Box<dyn Hittable>;
 }

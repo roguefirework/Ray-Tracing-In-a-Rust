@@ -1,10 +1,12 @@
+use crate::bvh::BVHNode;
 use crate::camera::Camera;
-use crate::color::Color;
-use crate::hittable_list::HittableList;
+use crate::color::{write_file, Color};
 use crate::material::{Dielectric, Lambertian, Metal};
+use crate::object::Hittable;
 use crate::sphere::{MovingSphere, Sphere};
 use crate::utils::{random_double, random_double_range};
 use crate::vec3::{Point3, Vec3};
+use prompted::input;
 
 mod vec3;
 mod color;
@@ -20,10 +22,11 @@ mod aabb;
 mod bvh;
 
 fn main() {
+    let options = Options::get_options();
     // World
-    let mut world : HittableList = HittableList::new();
+    let mut world : Vec<Box<dyn Hittable>> = Vec::new();
     let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
-    world.add(Box::new(Sphere::new(Point3::new(0.0,-1000.0,0.0), 1000.0, Box::new(ground_material))));
+    world.push(Box::new(Sphere::new(Point3::new(0.0,-1000.0,0.0), 1000.0, Box::new(ground_material))));
     for i in -10..10 {
         for j in -10..10 {
             let choose_material = random_double();
@@ -34,31 +37,44 @@ fn main() {
                     let albedo = Color::random() * Color::random();
                     let material = Lambertian::new(albedo);
                     let center2 = center + Vec3::new(0.0, random_double(), 0.0);
-                    world.add(Box::new(MovingSphere::new(center,center2,0.2, Box::new(material))));
+                    world.push(Box::new(MovingSphere::new(center,center2,0.2, Box::new(material))));
                 } else if choose_material < 0.95 {
                     let albedo = Color::random_range(0.5, 1.0);
                     let fuzz = random_double_range(0.0, 0.5);
                     let material = Metal::new(albedo, fuzz);
-                    world.add(Box::new(Sphere::new(center,0.2, Box::new(material))));
+                    world.push(Box::new(Sphere::new(center,0.2, Box::new(material))));
                 } else {
                     let material = Dielectric::new(1.5);
-                    world.add(Box::new(Sphere::new(center,0.2, Box::new(material))));
+                    world.push(Box::new(Sphere::new(center,0.2, Box::new(material))));
                 }
             }
         }
     }
     let material1 = Dielectric::new(1.5);
-    world.add(Box::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, Box::new(material1))));
+    world.push(Box::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, Box::new(material1))));
     let material2 = Lambertian::new(Color::new(0.4, 0.2, 0.1));
-    world.add(Box::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, Box::new(material2))));
+    world.push(Box::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, Box::new(material2))));
     let material3 = Metal::new(Color::new(0.7, 0.6, 0.5), 0.0);
-    world.add(Box::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, Box::new(material3))));
+    world.push(Box::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, Box::new(material3))));
 
-
+    let bvh = BVHNode::new(&mut world);
 
     let camera : Camera = Camera::new(16.0/9.0, 1200,500,
                                       50, Point3::new(13.0,2.0,3.0),
                                       Point3::new(0.0,0.0,0.0),
                                       Vec3::new(0.0,1.0,0.0), 20.0, 0.6, 10.0);
-    camera.render(&world,"out.ppm");
+
+    let image = camera.render(&bvh);
+
+    write_file(image, &*options.filename);
+}
+struct Options {
+    filename: String,
+}
+
+impl Options {
+    fn get_options() -> Options {
+        let filename = input!("File location: ");
+        Options { filename: filename }
+    }
 }

@@ -3,7 +3,6 @@ use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::utils::random_double;
 use crate::vec3::Vec3;
-
 pub struct ScatterData {
     attenuation: Box<Color>,
     ray: Box<Ray>
@@ -20,11 +19,10 @@ impl ScatterData {
     }
 }
 
-pub trait Material : Send + Sync{
+pub trait Material : Send + Sync {
     fn scatter(self : &Self, ray_in : &Ray, hit_data : &HitRecord) -> Option<ScatterData>;
     fn clone_box (&self) -> Box<dyn Material>;
 }
-
 pub struct Lambertian {
     albedo : Color,
 }
@@ -33,6 +31,7 @@ impl Lambertian {
         Lambertian {albedo}
     }
 }
+
 impl Material for Lambertian {
     fn scatter(self: &Self, _ray_in: &Ray, hit_data: &HitRecord) -> Option<ScatterData> {
         let direction = hit_data.normal() + Vec3::random_unit_vector();

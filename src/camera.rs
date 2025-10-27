@@ -1,12 +1,12 @@
-use indicatif::{ProgressBar, ProgressStyle};
-use rayon::iter::ParallelIterator;
-use rayon::iter::IntoParallelIterator;
-use crate::color::{write_file, Color};
+use crate::color::Color;
 use crate::interval::Interval;
 use crate::object::Hittable;
 use crate::ray::Ray;
 use crate::utils::{degrees_to_radians, random_double};
 use crate::vec3::{Point3, Vec3};
+use indicatif::{ProgressBar, ProgressStyle};
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 
 pub struct Camera {
     aspect_ratio: f64,
@@ -76,7 +76,7 @@ impl Camera {
             defocus_angle
         }
     }
-    pub fn render(self : &Self, world : &dyn Hittable, filename : &str) {
+    pub fn render(self : &Self, world : &dyn Hittable) -> Vec<Vec<Color>> {
         let bar = ProgressBar::new((self.image_height * self.image_width) as u64);
         bar.set_style(
             ProgressStyle::default_bar()
@@ -85,6 +85,8 @@ impl Camera {
                 .progress_chars("#>-"),
         );
 
+
+        
         let image : Vec<Vec<Color>> = (0..self.image_height).into_par_iter().map_with(bar.clone(), |bar_local,y| {
             let colors : Vec<Color> = (0..self.image_width).map(move |x| {
                 let color : Color = (0..self.samples_per_pixel).map(|_| {
@@ -97,14 +99,15 @@ impl Camera {
             return colors
         }).collect();
 
-        write_file(image, filename);
+        bar.finish();
+        image
     }
     
     fn ray_color(self: &Self, r : &Ray, world : &dyn Hittable, depth : u32) -> Color {
         if depth <= 0 {
             return Color::new(0.0,0.0,0.0);
         }
-        let hit = world.hit(r, &Interval::new(0.001, f64::INFINITY));
+        let hit = world.hit(r, &mut Interval::new(0.001, f64::INFINITY));
         if let Some(hit) = hit {
             if let Some(scatter) = hit.material().scatter(r, &hit) {
                 return *scatter.attenuation() * self.ray_color(scatter.ray(), world, depth - 1)
@@ -116,6 +119,7 @@ impl Camera {
         let t = 0.5 * (unit_direction.y() + 1.0);
         (1.0- t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
     }
+
     fn get_ray(self: &Self, i : i32, j : i32) -> Ray {
         let offset = Self::sample_square();
         let pixel_center = self.pixel00_loc +
@@ -125,6 +129,7 @@ impl Camera {
 
         Ray::new_with_time(origin, ray_direction,random_double())
     }
+
     fn sample_square() -> Vec3 {
         Vec3::new(random_double() - 0.5, random_double() - 0.5, 0.0)
     }
