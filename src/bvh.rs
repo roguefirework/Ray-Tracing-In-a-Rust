@@ -55,7 +55,7 @@ impl BVHNode {
         {
             return Ordering::Less;
         }
-        else if a_axis_interval.max > b_axis_interval.max
+        else if a_axis_interval.min > b_axis_interval.min
         {
             return Ordering::Greater;
         }
@@ -75,15 +75,16 @@ impl BVHNode {
 impl Hittable for BVHNode {
 
     fn hit(&self, ray: &Ray, interval: &mut Interval) -> Option<HitRecord> {
-        
         if self.aabb.hit(ray, interval).is_none() {
             return None
         }
-
+        
+        let min = interval.min;
+        let max = interval.max;
         let left_hit : Option<HitRecord> = self.left.hit(ray, interval);
 
-        let right_hit = self.right.hit(ray, &mut Interval::new(interval.min, match left_hit {
-            None => { interval.max}
+        let right_hit = self.right.hit(ray, &mut Interval::new(min, match left_hit {
+            None => { max}
             Some(ref hit) => {hit.t()}
         }));
         if right_hit.is_some() {

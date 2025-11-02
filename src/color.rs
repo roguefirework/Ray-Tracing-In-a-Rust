@@ -14,11 +14,10 @@ fn map_color(pixel_color: &Color) -> Rgb<u8> {
     b = linear_to_gamma(b);
 
     let intensity: Interval = Interval::new(0.0, 0.999);
-    let r_normalized  = (intensity.clamp(r) * 256.0) as u32;
-    let g_normalized  = (intensity.clamp(g) * 256.0) as u32;
-    let b_normalized  = (intensity.clamp(b) * 256.0) as u32;
-
-    Rgb([r_normalized as u8, g_normalized as u8, b_normalized as u8])
+    let r_normalized  = (intensity.clamp(r) * 256.0) as u8;
+    let g_normalized  = (intensity.clamp(g) * 256.0) as u8;
+    let b_normalized  = (intensity.clamp(b) * 256.0) as u8;
+    Rgb([r_normalized, g_normalized, b_normalized])
 }
 pub fn write_file(image :Vec<Vec<Color>>, filename:&str) {
     let filename = filename;

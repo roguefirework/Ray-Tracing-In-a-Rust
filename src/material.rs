@@ -1,6 +1,7 @@
 use crate::color::Color;
 use crate::object::HitRecord;
 use crate::ray::Ray;
+use crate::texture::{ConstantTexture, Texture};
 use crate::utils::random_double;
 use crate::vec3::Vec3;
 pub struct ScatterData {
@@ -24,11 +25,14 @@ pub trait Material : Send + Sync {
     fn clone_box (&self) -> Box<dyn Material>;
 }
 pub struct Lambertian {
-    albedo : Color,
+    texture : Box<dyn Texture>,
 }
 impl Lambertian {
     pub fn new(albedo : Color) -> Lambertian {
-        Lambertian {albedo}
+        Lambertian {texture : Box::new(ConstantTexture::new(albedo)) }
+    }
+    pub fn new_from_texture(texture : Box<dyn Texture>) -> Lambertian {
+        Lambertian {texture}
     }
 }
 
@@ -45,11 +49,11 @@ impl Material for Lambertian {
             new_ray = Ray::new_with_time(hit_data.position(), direction, _ray_in.time());
         }
 
-        Some(ScatterData::new(Box::new(self.albedo), Box::new(new_ray)))
+        Some(ScatterData::new(Box::new(self.texture.value(hit_data.u(), hit_data.v(), &hit_data.position())), Box::new(new_ray)))
     }
 
     fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(Lambertian::new(self.albedo))
+        Box::new(Lambertian::new_from_texture(self.texture.to_box()))
     }
 }
 

@@ -7,6 +7,7 @@ use crate::sphere::{MovingSphere, Sphere};
 use crate::utils::{random_double, random_double_range};
 use crate::vec3::{Point3, Vec3};
 use prompted::input;
+use crate::texture::{CheckerTexture, ConstantTexture, Texture};
 
 mod vec3;
 mod color;
@@ -20,13 +21,18 @@ mod camera;
 mod material;
 mod aabb;
 mod bvh;
+mod texture;
 
 fn main() {
     let options = Options::get_options();
     // World
     let mut world : Vec<Box<dyn Hittable>> = Vec::new();
-    let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
-    world.push(Box::new(Sphere::new(Point3::new(0.0,-1000.0,0.0), 1000.0, Box::new(ground_material))));
+
+    let ground_material = Lambertian::new_from_texture(CheckerTexture::new(
+        ConstantTexture::new(Color::new(0.1,0.3,0.2)).to_box(),
+        ConstantTexture::new(Color::new(0.9,0.9,0.9)).to_box(),0.32
+    ).to_box());
+    world.push(Box::new(Sphere::new(Point3::new(0.32,-1000.0,0.0), 1000.0, Box::new(ground_material))));
     for i in -10..10 {
         for j in -10..10 {
             let choose_material = random_double();
@@ -36,8 +42,7 @@ fn main() {
                 if choose_material < 0.8 {
                     let albedo = Color::random() * Color::random();
                     let material = Lambertian::new(albedo);
-                    let center2 = center + Vec3::new(0.0, random_double(), 0.0);
-                    world.push(Box::new(MovingSphere::new(center,center2,0.2, Box::new(material))));
+                    world.push(Box::new(Sphere::new(center,0.2, Box::new(material))));
                 } else if choose_material < 0.95 {
                     let albedo = Color::random_range(0.5, 1.0);
                     let fuzz = random_double_range(0.0, 0.5);

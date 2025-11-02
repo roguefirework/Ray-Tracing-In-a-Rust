@@ -10,13 +10,15 @@ pub(crate) struct HitRecord<'a> {
     normal: Vec3,
     t: f64,
     front_face: bool,
+    u : f64,
+    v: f64,
     material : &'a dyn Material
 }
 impl<'a> HitRecord<'a> {
-    pub fn new(position: Vec3, outward_normal : Vec3, ray : &Ray, t: f64, material : &'a (dyn Material + 'a)) -> Self {
+    pub fn new(position: Vec3, outward_normal : Vec3, ray : &Ray, t: f64, u : f64, v:f64, material : &'a (dyn Material + 'a)) -> Self {
         let front_face = ray.direction().dot(outward_normal) < 0.0;
         let normal = if front_face { outward_normal } else { -outward_normal };
-        HitRecord { position, normal, t, front_face, material }
+        HitRecord { position, normal, t, u, v, front_face, material }
     }
     pub fn position(&self) -> Vec3 {
         self.position
@@ -27,6 +29,12 @@ impl<'a> HitRecord<'a> {
     pub fn t(&self) -> f64 {
         self.t
     }
+    pub fn u(&self) -> f64 {
+        self.u
+    }
+    pub fn v(&self) -> f64 {
+        self.v
+    }
     pub fn front_face(&self) -> bool {
         self.front_face
     }
@@ -34,7 +42,7 @@ impl<'a> HitRecord<'a> {
         self.material
     }
 }
-pub(crate) trait Hittable : Send + Sync {
+pub(crate) trait Hittable : Send + Sync{
     fn hit(&self, ray: &Ray, interval : &mut Interval) -> Option<HitRecord>;
     fn bounding_box(&self) -> &AABB;
     fn clone_box(&self) -> Box<dyn Hittable>;

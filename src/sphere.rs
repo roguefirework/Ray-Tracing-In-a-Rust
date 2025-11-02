@@ -89,5 +89,5 @@ fn hit_sphere<'a>(center:&Point3, radius:&f64, material:&'a (dyn Material + 'a),
         }
     }
     let hit_position = ray.at(root);
-    Some(HitRecord::new(hit_position, (hit_position - *center) / *radius, ray, root, material))
+    Some(HitRecord::new(hit_position, (hit_position - *center) / *radius, ray, root, 0.0, 0.0, material))
 }
